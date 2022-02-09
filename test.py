@@ -38,23 +38,17 @@ def get_test_wave(self, freq, amplitude=4096, duration=5):
     t = np.linspace(0, duration, int(sample_rate * duration))
     return amplitude * np.sin(2 * np.pi * freq * t)
 
-"""
+
 note1 = PianoNote('C3')
 note2 = PianoNote('C#3')
 
 pp = PianoNotePlayer()
-wave = get_wave(get_test_wave(0, 0), 5)
-#wave = np.array(wave, dtype="int8")
-wave1 = get_wave(note2.get_freq(), 5)
-#wave1 = np.array(wave1, dtype="int8")
-"""
+wave = get_wave(note1.get_freq, 5)
 
-"""
 wave = np.repeat(wave.reshape(len(wave), 1), 2, axis = 1)
 sound = pygame.sndarray.make_sound(wave)
-#wave1 = np.repeat(wave1.reshape(len(wave1), 1), 2, axis = 1)
-sound1 = pygame.sndarray.make_sound(wave1)
 
+"""
 prev_time = 0
 
 while True:
@@ -68,7 +62,7 @@ while True:
 import os
 
 def resource_path(relative_path):
-    """ Get absolute path to resource, works for dev and for PyInstaller """
+    # Get absolute path to resource, works for dev and for PyInstaller
     try:
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
@@ -79,4 +73,22 @@ def resource_path(relative_path):
 
 Logo = resource_path("piano_keys.jpg")
 print(Logo)
+"""
+"""
+# create a sound from NumPy array of file
+snd = pygame.mixer.Sound(my_sound_source)
+
+# open new wave file
+sfile = wave.open('pure_tone.wav', 'w')
+
+# set the parameters
+sfile.setframerate(SAMPLINGFREQ)
+sfile.setnchannels(NCHANNELS)
+sfile.setsampwidth(2)
+
+# write raw PyGame sound buffer to wave file
+sfile.writeframesraw(snd.get_buffer().raw)
+
+# close file
+sfile.close()
 """

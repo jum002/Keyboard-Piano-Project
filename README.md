@@ -3,7 +3,7 @@ by Junhua (Michael) Ma
 
 
 ## Goals
-- Design a full-length (88 notes) piano that can be played on keyboard.
+- Design a piano with 7 octaves (84 notes) that can be played on keyboard.
 - Should have optimal design so that the fingers represent normal typing position and is as comfortable as possible.
 - Although it's fundamentally different playing experience than an actual piano, it should be fun and convenient to play anywhere on the computer and require a different type of mastery (like a rhythm game).
 - Visual display of actual piano being played so that when pressing keys on the keyboard, the user can look where it corresponds to the actual piano
@@ -108,7 +108,6 @@ The main challenge during this development is figuring out left and right shift.
 - The main difficulty likes in keeping track of the octaves in a window, which is previously all the same number, and is now partitioned into 2 numbers based on the position of the window.
   - I decided to use a simple brute force approach to this problem thanks to the fact that there are only about 80 keys in the piano. I initializes a 1D-array that stores all the octaves for each note of the piano as a list (i.e. it would be 12 1's followed by 12 2's followed by 12 3's...). With this approach, all I need to keep track of are two pointers pointing at two distinct position of this array to represent a window's position, and I can then quickly obtain the correct octave numbers in the window. This approach does require me to change some other methods in the class as well, but it works for all of the previous methods as well as new ones.
 
-
 **Piano Virtual Display**  
 It's easy to develop a basic display with pygame, which is already imported and used to play sounds. The code of pygame is directly added to Piano.py, the main file of the project.
 - I decided to use the image of all the piano keys as the main display instead of drawing over 80 rectangles.
@@ -141,7 +140,7 @@ Implementation of this feature is very quick and easy because I can reuse my pre
 
 
 ### Date: 2/09/2022
-**Add more notes to the window**  
+**Add more notes to the window**   
 After playing around with my piano, I realize that I should try to add as many notes as possible beyond just 12 notes on each scale because it turns out that it's rather common. Based on the number of keys I have on my keyboard, I should be about to at least add 3 notes to each scale for now. In the connected window mode, this would add 6 keys which is half an octave, making connected windows mode have a reach from 2 octaves to 2.5 octaves. These added notes, in combination of all the switch features I added, should allow even more complex piano playing.
 
 Design:
@@ -149,12 +148,30 @@ Design:
 - middle row: a-g, h-; 5 notes each (same as before)
 - bottom row: z-b, n-/  5 notes each (added 3 notes each)
 
-Changes to PianoKeyboard class:
+Changes to PianoKeyboard class:  
+As mentioned before, I decided to use a long array to store all the note names so I can apply the sliding window design to easily find the scale at any window position. I have previously used this method to store the octave of notes in the scale, and I'm now extending the same approach to store the name of the notes too.
+- Shifting now becomes very simple as the only thing I need to do is to change the window position and obtain the resulting scale names by slicing the corresponding section of the big array.
+  - Since the big array is computed initially, I don't need to perform any individual slicing or array operations when shifting. So I could also easily add the function to shift more than one note at a time. I added the ability to shift 3 notes at a time in connected mode, but this really sets up so that I can move as many notes as I want at any time.
+- This also sets the state for adding new notes. The previous design relies on the fact that the window size is exactly one octave. With this new design, I can change to any window size since I just need to obtain the corresponding chunk from the big array through slicing.
 
+After the changes to the PianoKeyboard class, I just need to add to the previous keyboard conditional logic to include more keys.
 
 
 ### Date: 2/09/2022
+**Add single window mode**  
+I decide to also provide a single window mode, which is one single large window covering about 50% of the entire piano keyboard, using as many keys on the keyboard as possible to construct a large window. I got this idea from this virtual piano web app https://www.onlinepianist.com/virtual-piano. The issues with the design of this web app, however, is that:
+- it cannot shift the window left or right in any way, so some lowest and highest octaves simply have no keyboard mappings
+- it uses shift+key to indicate black notes. This is very limiting because most piano play in keys other than the key of C, which requires a frequent combination of black and white keys in chords and scales.
+
+My window will inherit all the attributes of previous windows, besides it's the largest window possible. In addition, my design provides:
+- left and right shifting with a default of 6 keys (half an octave) at a time
+- 2 fixed positions: in the center or split on left and right side 
+
+
+### Date: 2/10/2022
 **Add record as mp3 feature**
 
 
+- slightly increase sample rate?
+- more accurate piano sound (low and high scales)?
 - add store song and practice mode?
