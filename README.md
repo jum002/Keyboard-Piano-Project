@@ -40,10 +40,11 @@ The goals of the design are listed below from highest to lowest priority:
   - Issue: I can't pip install pyaudio, which is required by synthesizer.
 - I couldn't find any existing synthesizer library that works for me, so I decided to program a simple piano synthesizer using the math provided here: https://dsp.stackexchange.com/questions/46598/mathematical-equation-for-the-sound-wave-that-a-piano-makes. Starting with a plain beep signal at a certain frequency as a sine wave, a series of operations are performed to make the resulting wave similar to a piano.
   - Issue 1: I use the basic sounddevice to play the wave. But the sound device can only play wave in form of numpy arrays, which means if multiple keys are pressed at the same time, I have to calculate the resulting waveform and store in array.
-    - Solution 1: created function combine_wave to combine multiple waves into one wave. Can be modified and improved because the initial sound has unpleasant noise
+    - Solution: created function combine_wave to combine multiple waves into one wave. Can be modified and improved because the initial sound has unpleasant noise
     - Update (2/05/2022): I think I fixed the issue of unpleasant noise by accident with the insertion of this line of code at the very end of the get wave function: y = (y*1500).astype(np.int16). The value 1500 is obtained by trial and error, and it's similar to a filter value: if too high, then the original unpleasant noise would be included, lower it till the unpleasant noise disappears. It does make volume go down but that's actually more of a benefit since it was too loud previously.
+    - Update (2/07/2022): the value 1500 is changed down to 1200 because of the noise detected when playing 4-5 notes at the same time.
   - Issue 2: I don't know how to make fast notes, like playing the note at k times speed.
-    - Solution 2: by changing a constant in the amplitude calculation I accidentally sped up the sound and solved this problem. So I added a parameter to speed to the get_wave() function which would change the speed
+    - Solution: by changing a constant in the amplitude calculation I accidentally sped up the sound and solved this problem. So I added a parameter to speed to the get_wave() function which would change the speed
     - Following Issue: how to change this actively when playing notes
 
 The decision at this point is to stick with my custom piano synthesizer, and maybe wrap it up with OOP later.
@@ -60,12 +61,12 @@ The decision at this point is to stick with my custom piano synthesizer, and may
 - Implemented my change scale design with basic conditionals. Have to use time() and a fixed refresh interval to detect input because it's very difficult to press or stop pressing 2 buttons simultaneously.
   - Update (2/06/2022): this refresh_rate design forms the foundation of all operations in the main loop like the PianoNotePlayer, not just for keyboard
 
-**Object Oriented Programming**
+**Object Oriented Programming**  
 My program has now reached the complexity that would greatly benefit from OOP. My design is as follows:
 - PianoNote class: create a basic note with attributes name, sharp (boolean), octave, and methods like get_frequency(), to_str(). There are 2 constructors such that a Note can be constructed the normal way of passing 3 variables to initialize each of the 3 attributes or initialize by passing a formatted string.
 - PianoNotePlayer class: wraps around note and sounddevice* to make it simple to generate waves and play notes, and especially multiple notes at once or notes at different speeds
   - Added function: initialize and stores all the waves for all the piano notes at the beginning of program so that no more wave generation is needed for individual notes during program.
-    - Follow up issue: al waves are initialized ay fixed default speeds, so I can no longer think of any way to change speed of each note with this approach, so if it's really important to change speed of notes, I would have to make changes to this approach
+    - Follow up issue: all waves are initialized ay fixed default speeds, so I can no longer think of any way to change speed of each note with this approach, so if it's really important to change speed of notes, I would have to make changes to this approach
   - Update (2/06/2022)*: souddevice is changed to pygame.mixer
 - WavePlotter Class: does all the plotting of the notes, useful for testing and designing
   - I Decided to add plot function directly in NotePlayer instead, so this class is removed for now
@@ -74,7 +75,7 @@ After all this, in piano.py as the main function, only need to declare objects a
   - Issue: when a button is pressed and is not released, it would keep sending data as pressed. So it can't be directly added to the list to be played because it would be repeatedly played throughout the duration of the press.
     - Solution: I used a list that keeps track of which notes are currently pressed. So the list of notes sent to the player only contains a note once each time it's pressed, and no more duplicate is sent to the player for the remaining duration of the press
 
-**Update to playing sounds**
+**Update to playing sounds**  
 I have been using sounddevice up to this point to easily play any wave encoded as a numpy array. However, the way to play sounds with sounddevice require the use of sleep function, and in the case of my program that requires adding waves when multiple notes are played while keeping track of individual notes, this becomes very complicated to do.
 - Potential solution: I'm looking for something in python (or if I need to program it myself) that can connect with the audio output port throughout the duration of the program, so a variable t (time) is constantly updating - like a live plot. During this "live plot", when a note is played, it's wave is added to whatever the existing wave is - like a input to the live plot by the principle of superposition.
   - I decide to test pygame's capability to play sounds as an alternative to soundevice
@@ -91,7 +92,7 @@ A trick that really helped me up to this point is the use of a testing file call
 
 
 ### Date: 2/06/2022
-**Adding and Improving Scale Changing**
+**Adding and Improving Scale Changing**  
 Updated Design for changing scales:
 - Since there are only 7 octaves but there are 10 number buttons from 1 to 0, I decide to give up the exact correspondence between the number of the button for the convenience of playing and switching scales. So I plan to use the 10 number buttons in the following way:
   - Button 1-2: switch left scale left or right by 1 note
@@ -108,7 +109,7 @@ The main challenge during this development is figuring out left and right shift.
   - I decided to use a simple brute force approach to this problem thanks to the fact that there are only about 80 keys in the piano. I initializes a 1D-array that stores all the octaves for each note of the piano as a list (i.e. it would be 12 1's followed by 12 2's followed by 12 3's...). With this approach, all I need to keep track of are two pointers pointing at two distinct position of this array to represent a window's position, and I can then quickly obtain the correct octave numbers in the window. This approach does require me to change some other methods in the class as well, but it works for all of the previous methods as well as new ones.
 
 
-**Piano Virtual Display**
+**Piano Virtual Display**  
 It's easy to develop a basic display with pygame, which is already imported and used to play sounds. The code of pygame is directly added to Piano.py, the main file of the project.
 - I decided to use the image of all the piano keys as the main display instead of drawing over 80 rectangles.
   - As a result, instead of having each key light up when pressed or in window, I only need to draw some indicator rectangles at the position of the key on the image, and have a window indicator which is a big half transparent rectangle covering the window on the image.
@@ -117,7 +118,7 @@ It's easy to develop a basic display with pygame, which is already imported and 
 
 
 ### Date: 2/07/2022
-**Attempt to Create the first exe file**
+**Attempt to Create the first exe file**  
 At this point, the result looks good for the version 1 to packaged into an executable file to be run at any time as a simple application.
 - I used pyinstaller to make the executable file
   - The first executable crashed out at the beginning, so I decided to remove matplotlib and the plotting function for now to simplify the program.
@@ -126,7 +127,7 @@ At this point, the result looks good for the version 1 to packaged into an execu
 
 
 ### Date: 2/08/2022
-**Add window connection mode**
+**Add window connection mode**  
 After playing around with my piano, I realized a problem: there's a frequent situation when playing the piano, which is that both hands may switch to a higher or lower position at the same time and covering a continuous large chunk of notes. This is hard to execute with the current design because the left and right is separated, and the only way to shift the left scale to a left position is by moving the window one note at a time, which is too slow and tedious. I plan to design it such that:
 - when the user press the space bar, window connection mode turned on, press the space bar again would turn this mode off
 - visual display of the 2 windows being connected as a new color to help user distinguish.
@@ -134,8 +135,22 @@ After playing around with my piano, I realized a problem: there's a frequent sit
 - The number buttons work for the entire connected window, with left scale buttons set the left edge and right scale buttons set the right edge.
   - For the 4 buttons used for shifting the left scale and right scale, I plan to make them into two sets of shifts of 1 note at a time and 3 notes at a time (because 5 notes should be mostly covered by pressing two buttons at once feature)
 
-**Add more notes to the window**
+Implementation of this feature is very quick and easy because I can reuse my previous functions in my PianoKeyboard class. Because a combined back-to-back window is really just a special case of the previously established left window and right window for which right window remains exactly 12 notes after the left window. So I just needed to add a new boolean attribute to keep track of connect mode in the PianoKeyboard class, modify update_scale_input() function to run the previous logic or my newly implemented combined window logic based on the boolean attribute. the shifting function is used in combined windows mode is the exact same since both windows are always shifted by the exact same amount. I can also reuse my code that draws the windows, all I needed to do is to change the color of both windows to yellow to signify connect mode is on.
+- Issue: after some debugging, the only issue that remains is the +3 and -3 shifting feature. Due to the design of the shifting function in PianoKeyboard right now, it only supports shifting by 1.
+  - Potential solution: to also support adding more notes to the window later, I plan to use a similar approach that I used for the octave on the note names, which is to compute all the note names in one big array at the beginning so I can easily slide windows across the array to acquire values without performing countless individual array modifications.
+
+
+### Date: 2/09/2022
+**Add more notes to the window**  
 After playing around with my piano, I realize that I should try to add as many notes as possible beyond just 12 notes on each scale because it turns out that it's rather common. Based on the number of keys I have on my keyboard, I should be about to at least add 3 notes to each scale for now. In the connected window mode, this would add 6 keys which is half an octave, making connected windows mode have a reach from 2 octaves to 2.5 octaves. These added notes, in combination of all the switch features I added, should allow even more complex piano playing.
+
+Design:
+- top row: q-t, y-p  5 notes each (same as before)
+- middle row: a-g, h-; 5 notes each (same as before)
+- bottom row: z-b, n-/  5 notes each (added 3 notes each)
+
+Changes to PianoKeyboard class:
+
 
 
 ### Date: 2/09/2022

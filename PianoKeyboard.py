@@ -18,6 +18,8 @@ class PianoKeyboard:
     __hold_listR = []
     __left_shift = 0
     __right_shift = 0
+    __connect_w = False
+
 
     def __init__(self):
         for x in range(2,8):
@@ -31,7 +33,7 @@ class PianoKeyboard:
         self.__scale_buttonsR = [keyboard.is_pressed('6'), keyboard.is_pressed('7'),
                                  keyboard.is_pressed('8'), keyboard.is_pressed('9')]
 
-    def update_scale_input(self):
+    def update_scale_input_NC(self):
         if self.__scale_buttonsL[0] == True and self.__scale_buttonsL[1] == True:
             self.__currentScaleL = 6
             self.__left_scale = self.__PIANO_NOTES_TEMPLATE_H[:]
@@ -120,6 +122,70 @@ class PianoKeyboard:
                 temp_list = self.__right_scale[1:]
                 temp_list.append(self.__right_scale[0])
                 self.__right_scale = temp_list[:]
+
+
+    def update_scale_input_C(self):
+        self.__currentScaleR = self.__currentScaleL + 12
+        if keyboard.is_pressed('3'):
+            self.__currentScaleL = 0
+            self.__currentScaleR = self.__currentScaleL + 12
+            self.__left_scale = self.__PIANO_NOTES_TEMPLATE[:]
+            self.__right_scale = self.__PIANO_NOTES_TEMPLATE[:]
+        elif keyboard.is_pressed('4'):
+            self.__currentScaleL = 12
+            self.__currentScaleR = self.__currentScaleL + 12
+            self.__left_scale = self.__PIANO_NOTES_TEMPLATE[:]
+            self.__right_scale = self.__PIANO_NOTES_TEMPLATE[:]
+        elif keyboard.is_pressed('5'):
+            self.__currentScaleL = 24
+            self.__currentScaleR = self.__currentScaleL + 12
+            self.__left_scale = self.__PIANO_NOTES_TEMPLATE[:]
+            self.__right_scale = self.__PIANO_NOTES_TEMPLATE[:]
+        elif keyboard.is_pressed('6'):
+            self.__currentScaleL = 36
+            self.__currentScaleR = self.__currentScaleL + 12
+            self.__left_scale = self.__PIANO_NOTES_TEMPLATE[:]
+            self.__right_scale = self.__PIANO_NOTES_TEMPLATE[:]
+        elif keyboard.is_pressed('7'):
+            self.__currentScaleL = 48
+            self.__currentScaleR = self.__currentScaleL + 12
+            self.__left_scale = self.__PIANO_NOTES_TEMPLATE[:]
+            self.__right_scale = self.__PIANO_NOTES_TEMPLATE[:]
+        elif keyboard.is_pressed('8'):
+            self.__currentScaleL = 60
+            self.__currentScaleR = self.__currentScaleL + 12
+            self.__left_scale = self.__PIANO_NOTES_TEMPLATE[:]
+            self.__right_scale = self.__PIANO_NOTES_TEMPLATE[:]
+        elif keyboard.is_pressed('1') and self.__left_shift == 0:
+            self.__left_shift = -1
+            self.__right_shift = -1
+        elif keyboard.is_pressed('2') and self.__left_shift == 0:
+            self.__left_shift = 1
+            self.__right_shift = 1
+        else:
+            self.__left_shift = 0
+            self.__right_shift = 0
+
+        self.update_LR_scale()
+
+        """ Temperarily removed
+        elif keyboard.is_pressed('9') and self.__left_shift == 0:
+            self.__left_shift = -3
+            self.__right_shift = -3
+        elif keyboard.is_pressed('0') and self.__left_shift == 0:
+            self.__left_shift = 3
+            self.__right_shift = 3
+        """
+
+
+    def update_scale_input(self):
+        if keyboard.is_pressed(' '):
+            self.__connect_w = not (self.__connect_w)
+
+        if self.__connect_w == False:
+            self.update_scale_input_NC()
+        else:
+            self.update_scale_input_C()
 
 
     def get_current_scale(self):
@@ -252,6 +318,9 @@ class PianoKeyboard:
 
     def get_active_list(self):
         return self.__active_list
+
+    def in_connect_mode(self):
+        return self.__connect_w
 
     def get_hold_list(self):
         list = self.__hold_list[:]

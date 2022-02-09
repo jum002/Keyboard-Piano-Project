@@ -25,6 +25,7 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
+YELLOW = (255, 255, 0)
 
 # Images
 def resource_path(relative_path):
@@ -87,8 +88,12 @@ while running:
 
     # Draw Window Indicators
     w_list = pkb.get_current_scale()
-    pygame.draw.rect(screen, BLUE, (37+w_list[0]//12*octave_spacing+(w_list[0]%12)*6.6,110,octave_spacing,10))
-    pygame.draw.rect(screen, GREEN, (37+w_list[1]//12*octave_spacing+(w_list[1]%12)*6.6,110,octave_spacing,10))
+    if pkb.in_connect_mode() == False:
+        pygame.draw.rect(screen, BLUE, (37+w_list[0]//12*octave_spacing+(w_list[0]%12)*6.6,110,octave_spacing,10))
+        pygame.draw.rect(screen, GREEN, (37+w_list[1]//12*octave_spacing+(w_list[1]%12)*6.6,110,octave_spacing,10))
+    else:
+        pygame.draw.rect(screen, YELLOW, (37+w_list[0]//12*octave_spacing+(w_list[0]%12)*6.6,110,octave_spacing,10))
+        pygame.draw.rect(screen, YELLOW, (37+w_list[1]//12*octave_spacing+(w_list[1]%12)*6.6,110,octave_spacing,10))
 
     # Flip the display
     pygame.display.flip()
