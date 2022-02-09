@@ -3,6 +3,7 @@ from PianoNote import PianoNote
 
 class PianoKeyboard:
     __window_size = 15
+    __single_window_size = 45
     __currentScaleL = 24 # 1-3
     __currentScaleR = 36 # 4-7
     __scale_buttonsL = [False, False, False]
@@ -13,12 +14,13 @@ class PianoKeyboard:
     __SST = [1]*12
     __left_scale = __PIANO_NOTES_TEMPLATE[__currentScaleL:__currentScaleL+__window_size]
     __right_scale = __PIANO_NOTES_TEMPLATE[__currentScaleR:__currentScaleR+__window_size]
+    __s_scale = __PIANO_NOTES_TEMPLATE[__currentScaleL:__currentScaleL+__single_window_size]
     __active_list = []
     __hold_list = []
     __hold_listR = []
     __left_shift = 0
     __right_shift = 0
-    __connect_w = False
+    __mode = 0  # 0 - normal, 1 - connect windows, 2 - single window
 
 
     def __init__(self):
@@ -32,6 +34,7 @@ class PianoKeyboard:
                                  keyboard.is_pressed('5')]
         self.__scale_buttonsR = [keyboard.is_pressed('6'), keyboard.is_pressed('7'),
                                  keyboard.is_pressed('8'), keyboard.is_pressed('9')]
+
 
     def update_scale_input_NC(self):
         # Change left scale window position based on keyboard input
@@ -125,29 +128,50 @@ class PianoKeyboard:
             self.__right_shift = 0
 
 
+    def update_scale_input_S(self):
+        self.__right_shift = 0
+        if keyboard.is_pressed('`') and self.__left_shift == 0:
+            self.__left_shift = -6
+            self.update_LR_scale()
+        elif keyboard.is_pressed('\\') and self.__left_shift == 0:
+            self.__left_shift = 6
+            self.update_LR_scale()
+        else:
+            self.__left_shift = 0
+
 
     def update_LR_scale(self):
-        if self.__left_shift != 0:
-            self.__currentScaleL += self.__left_shift
-            self.__left_scale = self.__PIANO_NOTES_TEMPLATE[self.__currentScaleL:self.__currentScaleL+self.__window_size]
+        if self.__mode == 2:
+            if self.__left_shift != 0:
+                self.__currentScaleL += self.__left_shift
+                self.__s_scale = self.__PIANO_NOTES_TEMPLATE[self.__currentScaleL:self.__currentScaleL+self.__single_window_size]
+        else:
+            if self.__left_shift != 0:
+                self.__currentScaleL += self.__left_shift
+                self.__left_scale = self.__PIANO_NOTES_TEMPLATE[self.__currentScaleL:self.__currentScaleL+self.__window_size]
 
-        if self.__right_shift != 0:
-            self.__currentScaleR += self.__right_shift
-            self.__right_scale = self.__PIANO_NOTES_TEMPLATE[self.__currentScaleR:self.__currentScaleR+self.__window_size]
+            if self.__right_shift != 0:
+                self.__currentScaleR += self.__right_shift
+                self.__right_scale = self.__PIANO_NOTES_TEMPLATE[self.__currentScaleR:self.__currentScaleR+self.__window_size]
 
 
     def update_scale_input(self):
         if keyboard.is_pressed(' '):
-            self.__connect_w = not (self.__connect_w)
+            self.__mode = (self.__mode+1)%3
 
-        if self.__connect_w == False:
+        if self.__mode == 0:
+            self.update_scales()
             self.update_scale_input_NC()
-        else:
+        elif self.__mode == 1:
+            self.update_scales()
             self.update_scale_input_C()
+        elif self.__mode == 2:
+            self.update_scale_input_S()
 
 
     def get_current_scale(self):
         return [self.__currentScaleL, self.__currentScaleR]
+
 
     def update_note_inputL(self):
         self.__active_list.clear()
@@ -286,19 +310,77 @@ class PianoKeyboard:
             self.__hold_listR.append(PianoNote(str(self.__right_scale[active_list[x]]+str(self.__SST[self.__currentScaleR+active_list[x]]))))
 
 
+    def update_note_inputS(self):
+        self.__active_list.clear()
+        active_list = []
+        keyboard_list = "1234567890-=qwertyuiop[]asdfghjkl;'zxcvbnm,./"
+        for x in range(0, 45):
+            if keyboard.is_pressed(keyboard_list[x]):
+                active_list.append(x)
+
+        # delete notes from holding
+        strS = ''
+        remove_list = []
+        for h in range(0, len(self.__hold_list)):
+            dele = True
+            for x in range(0, len(active_list)):
+                strS = self.__s_scale[active_list[x]]+str(self.__SST[self.__currentScaleL+active_list[x]])
+                if strS == self.__hold_list[h].to_str():
+                    dele = False
+                    break
+
+            if dele == True:
+                 remove_list.append(self.__hold_list[h])
+
+        for x in range(0, len(remove_list)):
+            self.__hold_list.remove(remove_list[x])
+
+        # add new notes to active list and ignore old notes
+        add_list = []
+        for x in range(0, len(active_list)):
+            strS = self.__s_scale[active_list[x]]+str(self.__SST[self.__currentScaleL+active_list[x]])
+            add = True
+            for h in range(0, len(self.__hold_list)):
+                if self.__hold_list[h].to_str() == strS:
+                    add = False
+                    break
+
+            if add == True:
+                add_list.append(x)
+
+        for x in range(0, len(add_list)):
+            self.__active_list.append(PianoNote(str(self.__s_scale[active_list[x]]+str(self.__SST[self.__currentScaleL+active_list[x]]))))
+            self.__hold_list.append(PianoNote(str(self.__s_scale[active_list[x]]+str(self.__SST[self.__currentScaleL+active_list[x]]))))
+
+
+    def update_note_input(self):
+        if self.__mode == 2:
+            self.update_note_inputS()
+        else:
+            self.update_note_inputL()
+            self.update_note_inputR()
+
+
     def get_active_list(self):
         return self.__active_list
 
-    def in_connect_mode(self):
-        return self.__connect_w
+
+    def get_mode(self):
+        return self.__mode
+
 
     def get_hold_list(self):
         list = self.__hold_list[:]
         list.extend(self.__hold_listR[:])
         return list
 
+
     def get_window_size(self):
-        return self.__window_size
+        if self.__mode == 2:
+            return self.__single_window_size
+        else:
+            return self.__window_size
+
 
     def print_active_list(self):
         ans = ''

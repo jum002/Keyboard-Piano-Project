@@ -163,9 +163,14 @@ I decide to also provide a single window mode, which is one single large window 
 - it cannot shift the window left or right in any way, so some lowest and highest octaves simply have no keyboard mappings
 - it uses shift+key to indicate black notes. This is very limiting because most piano play in keys other than the key of C, which requires a frequent combination of black and white keys in chords and scales.
 
-My window will inherit all the attributes of previous windows, besides it's the largest window possible. In addition, my design provides:
-- left and right shifting with a default of 6 keys (half an octave) at a time
-- 2 fixed positions: in the center or split on left and right side 
+My window will inherit all the attributes of previous windows, besides it's the largest window possible. In addition, my design provides left and right shifting with a default of 6 keys (half an octave) at a time.
+
+Implementation of this mode is also straight-forward, but it does require some more new code unlike connect windows mode which is largely code reuse.
+- The boolean variable to represent mode is now an integer variable, with 0 representing the normal mode, 1 represents connect windows mode, and 2 represents single window mode.
+- I reused some attributes used for the left scale as the pointer to my single window, I also largely copied code for previous scale change and note detection
+
+Result:
+The result needs more testing to tell if how good this mode is. The problem is that although my design allows playing chords with black and white notes at the same time, it leaves the structure of the keys in a awkward way because each row has about 12 notes, which is a full octave, so if I can't stick to the normal typing gesture easily and may need to position my hand in very strange way to play. I do expect this mode to be helpful at times, and I'm still testing if such a combination of different modes is the right way to solve the challenge of mapping notes to a small keyboard.
 
 
 ### Date: 2/10/2022

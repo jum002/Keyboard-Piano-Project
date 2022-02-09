@@ -44,7 +44,6 @@ piano_image = pygame.image.load(str(img_path))
 # Positional variables
 first_pos_w = (41, 160)
 first_pos_b = (47, 142)
-ws = pkb.get_window_size()-12
 
 def calculate_position_x(note):
     if note.get_sharp() == False:
@@ -70,10 +69,9 @@ while running:
 
     if time.time() - prev_time >= scale_refresh_rate:
         prev_time = time.time()
-        pkb.update_scales()
         pkb.update_scale_input()
-        pkb.update_note_inputL()
-        pkb.update_note_inputR()
+        pkb.update_note_input()
+        ws = pkb.get_window_size()-12
         pp.add_notes(pkb.get_active_list())
         pp.play()
 
@@ -89,12 +87,15 @@ while running:
 
     # Draw Window Indicators
     w_list = pkb.get_current_scale()
-    if pkb.in_connect_mode() == False:
+    if pkb.get_mode() == 0:
         pygame.draw.rect(screen, BLUE, (37+w_list[0]//12*octave_spacing+(w_list[0]%12)*6.6,110,octave_spacing+ws*6.6,10))
         pygame.draw.rect(screen, GREEN, (37+w_list[1]//12*octave_spacing+(w_list[1]%12)*6.6,110,octave_spacing+ws*6.6,10))
-    else:
+    elif pkb.get_mode() == 1:
         pygame.draw.rect(screen, YELLOW, (37+w_list[0]//12*octave_spacing+(w_list[0]%12)*6.6,110,octave_spacing+ws*6.6,10))
         pygame.draw.rect(screen, YELLOW, (37+w_list[1]//12*octave_spacing+(w_list[1]%12)*6.6,110,octave_spacing+ws*6.6,10))
+    elif pkb.get_mode() == 2:
+        pygame.draw.rect(screen, RED, (37+w_list[0]//12*octave_spacing+(w_list[0]%12)*6.6,110,octave_spacing+ws*6.6,10))
+
 
     # Flip the display
     pygame.display.flip()
